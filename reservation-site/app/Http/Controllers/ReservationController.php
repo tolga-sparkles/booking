@@ -8,11 +8,13 @@ use App\Mail\ReservationUpdated;
 use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
 class ReservationController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
@@ -36,11 +38,15 @@ class ReservationController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $this->authorize('create', Reservation::class);
         $experts = User::where('role', 'expert')->get();
-        return view('reservations.create', compact('experts'));
+        // Retrieve pending reservation data from the session, if it exists.
+        // Using pull() so it's only available for this one request.
+        $pending = $request->session()->pull('pending_reservation', null);
+
+        return view('reservations.create', compact('experts', 'pending'));
     }
 
     /**
@@ -55,8 +61,8 @@ class ReservationController extends Controller
             'end_time' => 'required|date|after:start_time',
         ]);
 
-        $startTime = $request->input('start_time');
-        $endTime = $request->input('end_time');
+        $startTime = new \Carbon\Carbon($request->input('start_time'));
+        $endTime = new \Carbon\Carbon($request->input('end_time'));
         $expertId = $request->input('expert_id');
 
         // Check for overlapping reservations for the selected expert
@@ -82,6 +88,32 @@ class ReservationController extends Controller
         Mail::to($reservation->expert)->send(new ReservationCreated($reservation));
 
         return redirect()->route('reservations.index')->with('success', 'Reservation created successfully.');
+    }
+
+
+    /**
+     * Prepare a booking from the homepage.
+     */
+    public function prepareBooking(Request $request)
+    {
+        // If user is already logged in, just create the reservation directly.
+        if (Auth::check()) {
+            return $this->store($request);
+        }
+
+        // Validate the incoming data from the homepage form.
+        $validatedData = $request->validate([
+            'expert_id' => 'required|exists:users,id',
+            'start_time' => 'required|date',
+            'end_time' => 'required|date|after:start_time',
+        ]);
+
+        // Store the validated data in the session to retrieve after login.
+        $request->session()->put('pending_reservation', $validatedData);
+
+        // Redirect to the login page with a message.
+        return redirect()->route('login')
+                         ->with('info', 'Please login or register to complete your booking.');
     }
 
 
@@ -118,8 +150,8 @@ class ReservationController extends Controller
             'end_time' => 'required|date|after:start_time',
         ]);
 
-        $startTime = $request->input('start_time');
-        $endTime = $request->input('end_time');
+        $startTime = new \Carbon\Carbon($request->input('start_time'));
+        $endTime = new \Carbon\Carbon($request->input('end_time'));
         $expertId = $request->input('expert_id');
 
         // Check for overlapping reservations for the selected expert, excluding the current one

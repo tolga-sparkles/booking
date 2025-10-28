@@ -1,14 +1,17 @@
 <?php
 
-use App\Http\Controllers\AdminReservationController;
-use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\AdminReservationController;
 use Illuminate\Support\Facades\Route;
+use App\Models\User;
 
 Route::get('/', function () {
-    return view('welcome');
+    $experts = User::where('role', 'expert')->get();
+    return view('welcome', compact('experts'));
 });
+
+Route::post('/prepare-booking', [ReservationController::class, 'prepareBooking'])->name('prepare-booking');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -27,5 +30,6 @@ Route::middleware(['auth', 'admin'])->name('admin.')->prefix('admin')->group(fun
     Route::resource('reservations', AdminReservationController::class);
     Route::resource('users', AdminUserController::class)->only(['index', 'edit', 'update']);
 });
+
 
 require __DIR__.'/auth.php';
