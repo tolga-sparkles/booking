@@ -27,10 +27,16 @@
                             @enderror
                         </div>
 
+                        <!-- Reservation Date -->
+                        <div class="mb-4">
+                            <label for="reservation_date" class="block text-gray-700 text-sm font-bold mb-2">Date:</label>
+                            <input type="date" id="reservation_date" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="{{ old('reservation_date') }}">
+                        </div>
+
                         <!-- Start Time -->
                         <div class="mb-4">
-                            <label for="start_time" class="block text-gray-700 text-sm font-bold mb-2">Start Time:</label>
-                            <input type="datetime-local" name="start_time" id="start_time" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="{{ old('start_time') }}">
+                            <label for="start_time_picker" class="block text-gray-700 text-sm font-bold mb-2">Start Time:</label>
+                            <input type="time" id="start_time_picker" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="{{ old('start_time_picker') }}">
                             @error('start_time')
                                 <p class="text-red-500 text-xs italic">{{ $message }}</p>
                             @enderror
@@ -38,12 +44,15 @@
 
                         <!-- End Time -->
                         <div class="mb-4">
-                            <label for="end_time" class="block text-gray-700 text-sm font-bold mb-2">End Time:</label>
-                            <input type="datetime-local" name="end_time" id="end_time" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="{{ old('end_time') }}">
+                            <label for="end_time_picker" class="block text-gray-700 text-sm font-bold mb-2">End Time:</label>
+                            <input type="time" id="end_time_picker" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="{{ old('end_time_picker') }}">
                             @error('end_time')
                                 <p class="text-red-500 text-xs italic">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <input type="hidden" name="start_time" id="start_time">
+                        <input type="hidden" name="end_time" id="end_time">
 
                         <div class="flex items-center justify-between">
                             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
@@ -55,4 +64,62 @@
             </div>
         </div>
     </div>
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            const dateInput = document.getElementById('reservation_date');
+            const startTimeInput = document.getElementById('start_time_picker');
+            const endTimeInput = document.getElementById('end_time_picker');
+            const hiddenStartTime = document.getElementById('start_time');
+            const hiddenEndTime = document.getElementById('end_time');
+
+            function updateHiddenFields() {
+                const date = dateInput.value;
+                const startTime = startTimeInput.value;
+                const endTime = endTimeInput.value;
+
+                if (date && startTime) {
+                    hiddenStartTime.value = `${date}T${startTime}`;
+                } else {
+                    hiddenStartTime.value = '';
+                }
+
+                if (date && endTime) {
+                    hiddenEndTime.value = `${date}T${endTime}`;
+                } else {
+                    hiddenEndTime.value = '';
+                }
+            }
+
+            dateInput.addEventListener('input', updateHiddenFields);
+            startTimeInput.addEventListener('input', updateHiddenFields);
+            endTimeInput.addEventListener('input', updateHiddenFields);
+
+            form.addEventListener('submit', function(e) {
+                updateHiddenFields();
+                // Basic validation to ensure fields are not empty
+                if (!hiddenStartTime.value || !hiddenEndTime.value) {
+                    // This is a fallback, Laravel validation is primary
+                    console.error("Date and time must be selected.");
+                }
+            });
+
+            // Handle old input on validation failure
+            const oldStartTime = "{{ old('start_time') }}";
+            const oldEndTime = "{{ old('end_time') }}";
+            if (oldStartTime) {
+                const [date, time] = oldStartTime.split('T');
+                dateInput.value = date;
+                startTimeInput.value = time;
+            }
+            if (oldEndTime) {
+                const [date, time] = oldEndTime.split('T');
+                if(!dateInput.value) dateInput.value = date;
+                endTimeInput.value = time;
+            }
+            updateHiddenFields();
+        });
+    </script>
+    @endpush
 </x-app-layout>
