@@ -78,6 +78,16 @@ class ReservationController extends Controller
         return redirect()->route('reservations.index')->with('success', 'Reservation created successfully.');
     }
 
+    /**
+     * Store a newly created resource from the homepage.
+     */
+    public function storeFromHomepage(Request $request)
+    {
+        // Since this route is protected by 'auth' middleware, we can reuse the store logic.
+        // We might want to add a specific authorization check here in the future.
+        return $this->store($request);
+    }
+
 
     /**
      * Display the specified resource.

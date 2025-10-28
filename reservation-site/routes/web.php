@@ -5,12 +5,13 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ExpertCalendarController;
 use Illuminate\Support\Facades\Route;
+use App\Models\User;
 
 Route::get('/', function () {
-    return view('welcome');
+    $experts = User::where('role', 'expert')->get();
+    return view('welcome', compact('experts'));
 });
 
-use App\Models\User;
 use App\Models\Reservation;
 
 Route::get('/dashboard', function () {
@@ -26,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::post('/book-appointment', [ReservationController::class, 'storeFromHomepage'])->name('book-appointment');
     Route::resource('reservations', ReservationController::class);
 });
 
