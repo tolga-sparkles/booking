@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ReservationCancelled;
+use App\Mail\ReservationCreated;
+use App\Mail\ReservationUpdated;
 use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class ReservationController extends Controller
 {
@@ -72,12 +76,16 @@ class ReservationController extends Controller
             return back()->withErrors(['start_time' => 'The selected time slot is already booked for this expert.'])->withInput();
         }
 
-        Reservation::create([
+        $reservation = Reservation::create([
             'user_id' => Auth::id(),
             'expert_id' => $expertId,
             'start_time' => $startTime,
             'end_time' => $endTime,
         ]);
+
+        // Send email notifications
+        Mail::to($reservation->user)->send(new ReservationCreated($reservation));
+        Mail::to($reservation->expert)->send(new ReservationCreated($reservation));
 
         return redirect()->route('reservations.index')->with('success', 'Reservation created successfully.');
     }
@@ -164,6 +172,10 @@ class ReservationController extends Controller
             'end_time' => $endTime,
         ]);
 
+        // Send email notifications
+        Mail::to($reservation->user)->send(new ReservationUpdated($reservation));
+        Mail::to($reservation->expert)->send(new ReservationUpdated($reservation));
+
         return redirect()->route('reservations.index')->with('success', 'Reservation updated successfully.');
     }
 
@@ -173,6 +185,10 @@ class ReservationController extends Controller
     public function destroy(Reservation $reservation)
     {
         $this->authorize('delete', $reservation);
+
+        // Send email notifications before deleting
+        Mail::to($reservation->user)->send(new ReservationCancelled($reservation));
+        Mail::to($reservation->expert)->send(new ReservationCancelled($reservation));
 
         $reservation->delete();
 
