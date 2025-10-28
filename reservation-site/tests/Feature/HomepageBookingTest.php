@@ -20,7 +20,7 @@ class HomepageBookingTest extends TestCase
             'end_time' => now()->addHours(2)->format('Y-m-d\TH:i'),
         ];
 
-        $response = $this->post(route('book-appointment'), $reservationData);
+        $response = $this->post(route('prepare-booking'), $reservationData);
 
         $response->assertRedirect(route('login'));
     }
@@ -36,7 +36,7 @@ class HomepageBookingTest extends TestCase
             'end_time' => now()->addHours(2)->format('Y-m-d\TH:i'),
         ];
 
-        $response = $this->actingAs($customer)->post(route('book-appointment'), $reservationData);
+        $response = $this->actingAs($customer)->post(route('prepare-booking'), $reservationData);
 
         $response->assertRedirect(route('reservations.index'));
         $this->assertDatabaseHas('reservations', [
