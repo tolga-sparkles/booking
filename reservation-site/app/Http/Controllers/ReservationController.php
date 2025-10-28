@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 
 class ReservationController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
@@ -51,8 +53,8 @@ class ReservationController extends Controller
             'end_time' => 'required|date|after:start_time',
         ]);
 
-        $startTime = $request->input('start_time');
-        $endTime = $request->input('end_time');
+        $startTime = new \Carbon\Carbon($request->input('start_time'));
+        $endTime = new \Carbon\Carbon($request->input('end_time'));
         $expertId = $request->input('expert_id');
 
         // Check for overlapping reservations for the selected expert
@@ -110,8 +112,8 @@ class ReservationController extends Controller
             'end_time' => 'required|date|after:start_time',
         ]);
 
-        $startTime = $request->input('start_time');
-        $endTime = $request->input('end_time');
+        $startTime = new \Carbon\Carbon($request->input('start_time'));
+        $endTime = new \Carbon\Carbon($request->input('end_time'));
         $expertId = $request->input('expert_id');
 
         // Check for overlapping reservations for the selected expert, excluding the current one

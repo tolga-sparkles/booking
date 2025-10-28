@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Reservation;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class AdminReservationController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of all reservations.
      *
