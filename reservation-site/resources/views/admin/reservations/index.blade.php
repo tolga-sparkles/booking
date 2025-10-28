@@ -49,7 +49,8 @@
                                                 {{ $reservation->end_time }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <form action="{{ route('admin.reservations.destroy', $reservation) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this reservation?');">
+                                                <a href="{{ route('reservations.show', $reservation) }}" class="text-blue-600 hover:text-blue-900 mr-4">Details</a>
+                                                <form action="{{ route('admin.reservations.destroy', $reservation) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this reservation?');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>

@@ -80,9 +80,11 @@ class ReservationController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Reservation $reservation)
     {
-        //
+        $this->authorize('view', $reservation);
+
+        return view('reservations.show', compact('reservation'));
     }
 
     /**

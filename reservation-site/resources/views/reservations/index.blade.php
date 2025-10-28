@@ -9,9 +9,11 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
+                    @if (Auth::user()->isCustomer())
                     <a href="{{ route('reservations.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                         New Reservation
                     </a>
+                    @endif
 
                     <div class="mt-6">
                         @if ($reservations->isEmpty())
@@ -41,6 +43,7 @@
                                                 {{ $reservation->end_time }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <a href="{{ route('reservations.show', $reservation) }}" class="text-blue-600 hover:text-blue-900 mr-4">Details</a>
                                                 <a href="{{ route('reservations.edit', $reservation) }}" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
                                                 <form action="{{ route('reservations.destroy', $reservation) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this reservation?');">
                                                     @csrf
