@@ -34,11 +34,15 @@ class ReservationController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $this->authorize('create', Reservation::class);
         $experts = User::where('role', 'expert')->get();
-        return view('reservations.create', compact('experts'));
+        // Retrieve pending reservation data from the session, if it exists.
+        // Using pull() so it's only available for this one request.
+        $pending = $request->session()->pull('pending_reservation', null);
+
+        return view('reservations.create', compact('experts', 'pending'));
     }
 
     /**
@@ -78,14 +82,30 @@ class ReservationController extends Controller
         return redirect()->route('reservations.index')->with('success', 'Reservation created successfully.');
     }
 
+
     /**
-     * Store a newly created resource from the homepage.
+     * Prepare a booking from the homepage.
      */
-    public function storeFromHomepage(Request $request)
+    public function prepareBooking(Request $request)
     {
-        // Since this route is protected by 'auth' middleware, we can reuse the store logic.
-        // We might want to add a specific authorization check here in the future.
-        return $this->store($request);
+        // If user is already logged in, just create the reservation directly.
+        if (Auth::check()) {
+            return $this->store($request);
+        }
+
+        // Validate the incoming data from the homepage form.
+        $validatedData = $request->validate([
+            'expert_id' => 'required|exists:users,id',
+            'start_time' => 'required|date',
+            'end_time' => 'required|date|after:start_time',
+        ]);
+
+        // Store the validated data in the session to retrieve after login.
+        $request->session()->put('pending_reservation', $validatedData);
+
+        // Redirect to the login page with a message.
+        return redirect()->route('login')
+                         ->with('info', 'Please login or register to complete your booking.');
     }
 
 

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Session;
 
 class LoginRequest extends FormRequest
 {
@@ -50,6 +51,20 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    /**
+     * Get the intended redirect response.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function send()
+    {
+        if (Session::has('pending_reservation')) {
+            return redirect()->intended(route('reservations.create'));
+        }
+
+        return redirect()->intended(route('dashboard'));
     }
 
     /**

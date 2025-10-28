@@ -17,7 +17,7 @@
                             <label for="expert_id" class="block text-gray-700 text-sm font-bold mb-2">Expert:</label>
                             <select name="expert_id" id="expert_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                                 @foreach ($experts as $expert)
-                                    <option value="{{ $expert->id }}" {{ old('expert_id') == $expert->id ? 'selected' : '' }}>
+                                <option value="{{ $expert->id }}" {{ old('expert_id', $pending['expert_id'] ?? null) == $expert->id ? 'selected' : '' }}>
                                         {{ $expert->name }}
                                     </option>
                                 @endforeach
@@ -105,20 +105,23 @@
                 }
             });
 
-            // Handle old input on validation failure
-            const oldStartTime = "{{ old('start_time') }}";
-            const oldEndTime = "{{ old('end_time') }}";
-            if (oldStartTime) {
-                const [date, time] = oldStartTime.split('T');
-                dateInput.value = date;
-                startTimeInput.value = time;
+            function setFormValues(start, end) {
+                if (!start) return;
+
+                const startDate = new Date(start.replace(' ', 'T'));
+                const endDate = new Date(end.replace(' ', 'T'));
+
+                dateInput.value = startDate.toISOString().split('T')[0];
+                startTimeInput.value = startDate.toTimeString().substring(0, 5);
+                endTimeInput.value = endDate.toTimeString().substring(0, 5);
+                updateHiddenFields();
             }
-            if (oldEndTime) {
-                const [date, time] = oldEndTime.split('T');
-                if(!dateInput.value) dateInput.value = date;
-                endTimeInput.value = time;
-            }
-            updateHiddenFields();
+
+            // Prioritize old() data on validation failure, then check for pending data from session
+            const oldStartTime = "{{ old('start_time', $pending['start_time'] ?? '') }}";
+            const oldEndTime = "{{ old('end_time', $pending['end_time'] ?? '') }}";
+
+            setFormValues(oldStartTime, oldEndTime);
         });
     </script>
     @endpush

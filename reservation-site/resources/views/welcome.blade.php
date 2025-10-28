@@ -11,7 +11,7 @@
         <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
             <h1 class="text-2xl font-bold mb-6 text-center">Book Your Appointment</h1>
 
-            <form action="{{ route('book-appointment') }}" method="POST">
+            <form action="{{ route('prepare-booking') }}" method="POST">
                 @csrf
 
                 <!-- Expert -->
