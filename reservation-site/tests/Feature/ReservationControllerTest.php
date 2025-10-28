@@ -2,9 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ReservationCancelled;
+use App\Mail\ReservationCreated;
+use App\Mail\ReservationUpdated;
 use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class ReservationControllerTest extends TestCase
@@ -14,6 +18,7 @@ class ReservationControllerTest extends TestCase
     // Customer Tests
     public function test_customer_can_create_a_reservation()
     {
+        Mail::fake();
         $customer = User::factory()->create(['role' => 'customer']);
         $expert = User::factory()->create(['role' => 'expert']);
 
@@ -27,10 +32,12 @@ class ReservationControllerTest extends TestCase
 
         $response->assertRedirect(route('reservations.index'));
         $this->assertDatabaseHas('reservations', ['expert_id' => $expert->id]);
+        Mail::assertSent(ReservationCreated::class, 2); // To customer and expert
     }
 
     public function test_customer_can_update_their_own_reservation()
     {
+        Mail::fake();
         $customer = User::factory()->create(['role' => 'customer']);
         $expert = User::factory()->create(['role' => 'expert']);
         $reservation = Reservation::factory()->create(['user_id' => $customer->id, 'expert_id' => $expert->id]);
@@ -45,17 +52,21 @@ class ReservationControllerTest extends TestCase
 
         $response->assertRedirect(route('reservations.index'));
         $this->assertDatabaseHas('reservations', ['id' => $reservation->id, 'start_time' => $updateData['start_time']]);
+        Mail::assertSent(ReservationUpdated::class, 2);
     }
 
     public function test_customer_can_delete_their_own_reservation()
     {
+        Mail::fake();
         $customer = User::factory()->create(['role' => 'customer']);
-        $reservation = Reservation::factory()->create(['user_id' => $customer->id]);
+        $expert = User::factory()->create(['role' => 'expert']);
+        $reservation = Reservation::factory()->create(['user_id' => $customer->id, 'expert_id' => $expert->id]);
 
         $response = $this->actingAs($customer)->delete(route('reservations.destroy', $reservation));
 
         $response->assertRedirect(route('reservations.index'));
         $this->assertDatabaseMissing('reservations', ['id' => $reservation->id]);
+        Mail::assertSent(ReservationCancelled::class, 2);
     }
 
     public function test_customer_can_view_their_own_reservation_details()
@@ -72,6 +83,7 @@ class ReservationControllerTest extends TestCase
     // Expert Tests
     public function test_expert_can_update_a_reservation_assigned_to_them()
     {
+        Mail::fake();
         $customer = User::factory()->create(['role' => 'customer']);
         $expert = User::factory()->create(['role' => 'expert']);
         $reservation = Reservation::factory()->create(['user_id' => $customer->id, 'expert_id' => $expert->id]);
@@ -86,6 +98,7 @@ class ReservationControllerTest extends TestCase
 
         $response->assertRedirect(route('reservations.index'));
         $this->assertDatabaseHas('reservations', ['id' => $reservation->id, 'start_time' => $updateData['start_time']]);
+        Mail::assertSent(ReservationUpdated::class, 2);
     }
 
     public function test_expert_can_view_a_reservation_assigned_to_them()
