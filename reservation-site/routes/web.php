@@ -9,8 +9,15 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+use App\Models\User;
+use App\Models\Reservation;
+
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $totalUsers = User::count();
+    $totalExperts = User::where('role', 'expert')->count();
+    $totalReservations = Reservation::count();
+
+    return view('dashboard', compact('totalUsers', 'totalExperts', 'totalReservations'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
