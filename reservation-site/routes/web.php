@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminReservationController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
 use Illuminate\Support\Facades\Route;
@@ -22,8 +23,9 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin routes
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::resource('admin/reservations', AdminReservationController::class, ['as' => 'admin']);
+Route::middleware(['auth', 'admin'])->name('admin.')->prefix('admin')->group(function () {
+    Route::resource('reservations', AdminReservationController::class);
+    Route::resource('users', AdminUserController::class)->only(['index', 'edit', 'update']);
 });
 
 require __DIR__.'/auth.php';

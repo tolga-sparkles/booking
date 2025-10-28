@@ -20,7 +20,10 @@
                     </x-nav-link>
                     @if (Auth::user()->isAdmin() || Auth::user()->isManager())
                         <x-nav-link :href="route('admin.reservations.index')" :active="request()->routeIs('admin.reservations.index')">
-                            {{ __('Admin Panel') }}
+                            {{ __('Reservations') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.index')">
+                            {{ __('User Management') }}
                         </x-nav-link>
                     @endif
                 </div>
