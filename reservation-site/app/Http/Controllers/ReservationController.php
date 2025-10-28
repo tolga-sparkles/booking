@@ -68,24 +68,56 @@ class ReservationController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Reservation $reservation)
     {
-        //
+        $this->authorize('update', $reservation);
+
+        return view('reservations.edit', compact('reservation'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Reservation $reservation)
     {
-        //
+        $this->authorize('update', $reservation);
+
+        $request->validate([
+            'start_time' => 'required|date',
+            'end_time' => 'required|date|after:start_time',
+        ]);
+
+        $startTime = $request->input('start_time');
+        $endTime = $request->input('end_time');
+
+        // Check for overlapping reservations, excluding the current one
+        $overlappingReservations = Reservation::where('id', '!=', $reservation->id)
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->where('start_time', '<', $endTime)
+                      ->where('end_time', '>', $startTime);
+            })->exists();
+
+        if ($overlappingReservations) {
+            return back()->withErrors(['start_time' => 'The selected time slot is already booked.'])->withInput();
+        }
+
+        $reservation->update([
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+        ]);
+
+        return redirect()->route('reservations.index')->with('success', 'Reservation updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Reservation $reservation)
     {
-        //
+        $this->authorize('delete', $reservation);
+
+        $reservation->delete();
+
+        return redirect()->route('reservations.index')->with('success', 'Reservation deleted successfully.');
     }
 }
