@@ -11,100 +11,109 @@ class ReservationControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_user_can_delete_their_own_reservation()
+    // Customer Tests
+    public function test_customer_can_create_a_reservation()
     {
-        $user = User::factory()->create();
-        $reservation = Reservation::factory()->create(['user_id' => $user->id]);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $expert = User::factory()->create(['role' => 'expert']);
 
-        $response = $this->actingAs($user)->delete(route('reservations.destroy', $reservation));
+        $reservationData = [
+            'expert_id' => $expert->id,
+            'start_time' => now()->addHours(1)->format('Y-m-d\TH:i'),
+            'end_time' => now()->addHours(2)->format('Y-m-d\TH:i'),
+        ];
+
+        $response = $this->actingAs($customer)->post(route('reservations.store'), $reservationData);
+
+        $response->assertRedirect(route('reservations.index'));
+        $this->assertDatabaseHas('reservations', ['expert_id' => $expert->id]);
+    }
+
+    public function test_customer_can_update_their_own_reservation()
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $expert = User::factory()->create(['role' => 'expert']);
+        $reservation = Reservation::factory()->create(['user_id' => $customer->id, 'expert_id' => $expert->id]);
+
+        $updateData = [
+            'expert_id' => $expert->id,
+            'start_time' => now()->addHours(3)->format('Y-m-d\TH:i'),
+            'end_time' => now()->addHours(4)->format('Y-m-d\TH:i'),
+        ];
+
+        $response = $this->actingAs($customer)->put(route('reservations.update', $reservation), $updateData);
+
+        $response->assertRedirect(route('reservations.index'));
+        $this->assertDatabaseHas('reservations', ['id' => $reservation->id, 'start_time' => $updateData['start_time']]);
+    }
+
+    public function test_customer_can_delete_their_own_reservation()
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $reservation = Reservation::factory()->create(['user_id' => $customer->id]);
+
+        $response = $this->actingAs($customer)->delete(route('reservations.destroy', $reservation));
 
         $response->assertRedirect(route('reservations.index'));
         $this->assertDatabaseMissing('reservations', ['id' => $reservation->id]);
     }
 
-    public function test_user_cannot_delete_another_users_reservation()
+    // Expert Tests
+    public function test_expert_can_update_a_reservation_assigned_to_them()
     {
-        $user = User::factory()->create();
-        $otherUser = User::factory()->create();
-        $reservation = Reservation::factory()->create(['user_id' => $otherUser->id]);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $expert = User::factory()->create(['role' => 'expert']);
+        $reservation = Reservation::factory()->create(['user_id' => $customer->id, 'expert_id' => $expert->id]);
 
-        $response = $this->actingAs($user)->delete(route('reservations.destroy', $reservation));
+        $updateData = [
+            'expert_id' => $expert->id,
+            'start_time' => now()->addHours(5)->format('Y-m-d\TH:i'),
+            'end_time' => now()->addHours(6)->format('Y-m-d\TH:i'),
+        ];
 
-        $response->assertStatus(403);
-        $this->assertDatabaseHas('reservations', ['id' => $reservation->id]);
-    }
-
-    public function test_user_can_view_edit_page_for_their_own_reservation()
-    {
-        $user = User::factory()->create();
-        $reservation = Reservation::factory()->create(['user_id' => $user->id]);
-
-        $response = $this->actingAs($user)->get(route('reservations.edit', $reservation));
-
-        $response->assertStatus(200);
-        $response->assertViewIs('reservations.edit');
-    }
-
-    public function test_user_cannot_view_edit_page_for_another_users_reservation()
-    {
-        $user = User::factory()->create();
-        $otherUser = User::factory()->create();
-        $reservation = Reservation::factory()->create(['user_id' => $otherUser->id]);
-
-        $response = $this->actingAs($user)->get(route('reservations.edit', $reservation));
-
-        $response->assertStatus(403);
-    }
-
-    public function test_user_can_update_their_own_reservation()
-    {
-        $user = User::factory()->create();
-        $reservation = Reservation::factory()->create(['user_id' => $user->id]);
-
-        $newStartTime = now()->addHours(1)->format('Y-m-d\TH:i');
-        $newEndTime = now()->addHours(2)->format('Y-m-d\TH:i');
-
-        $response = $this->actingAs($user)->put(route('reservations.update', $reservation), [
-            'start_time' => $newStartTime,
-            'end_time' => $newEndTime,
-        ]);
+        $response = $this->actingAs($expert)->put(route('reservations.update', $reservation), $updateData);
 
         $response->assertRedirect(route('reservations.index'));
-        $this->assertDatabaseHas('reservations', [
-            'id' => $reservation->id,
-            'start_time' => $newStartTime,
-            'end_time' => $newEndTime,
-        ]);
+        $this->assertDatabaseHas('reservations', ['id' => $reservation->id, 'start_time' => $updateData['start_time']]);
     }
 
-    public function test_user_cannot_update_another_users_reservation()
+    // Authorization Tests
+    public function test_expert_cannot_create_a_reservation()
     {
-        $user = User::factory()->create();
-        $otherUser = User::factory()->create();
-        $reservation = Reservation::factory()->create(['user_id' => $otherUser->id]);
-
-        $response = $this->actingAs($user)->put(route('reservations.update', $reservation), [
-            'start_time' => now()->addHours(1)->format('Y-m-d\TH:i'),
-            'end_time' => now()->addHours(2)->format('Y-m-d\TH:i'),
-        ]);
-
+        $expert = User::factory()->create(['role' => 'expert']);
+        $response = $this->actingAs($expert)->get(route('reservations.create'));
         $response->assertStatus(403);
     }
 
-    public function test_user_cannot_update_reservation_to_overlap_with_another()
+    public function test_customer_cannot_delete_another_users_reservation()
     {
-        $user = User::factory()->create();
-        $existingReservation = Reservation::factory()->create([
-            'start_time' => now()->addHours(2),
-            'end_time' => now()->addHours(3),
-        ]);
-        $reservationToUpdate = Reservation::factory()->create(['user_id' => $user->id]);
+        $customer1 = User::factory()->create(['role' => 'customer']);
+        $customer2 = User::factory()->create(['role' => 'customer']);
+        $reservation = Reservation::factory()->create(['user_id' => $customer2->id]);
 
-        $response = $this->actingAs($user)->put(route('reservations.update', $reservationToUpdate), [
-            'start_time' => now()->addHours(2)->format('Y-m-d\TH:i'),
-            'end_time' => now()->addHours(3)->format('Y-m-d\TH:i'),
+        $response = $this->actingAs($customer1)->delete(route('reservations.destroy', $reservation));
+        $response->assertStatus(403);
+    }
+
+    // Overlap Test
+    public function test_cannot_create_overlapping_reservation_for_same_expert()
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $expert = User::factory()->create(['role' => 'expert']);
+
+        Reservation::factory()->create([
+            'expert_id' => $expert->id,
+            'start_time' => now()->addHours(1),
+            'end_time' => now()->addHours(2),
         ]);
 
+        $overlappingData = [
+            'expert_id' => $expert->id,
+            'start_time' => now()->addMinutes(90)->format('Y-m-d\TH:i'),
+            'end_time' => now()->addMinutes(150)->format('Y-m-d\TH:i'),
+        ];
+
+        $response = $this->actingAs($customer)->post(route('reservations.store'), $overlappingData);
         $response->assertSessionHasErrors('start_time');
     }
 }

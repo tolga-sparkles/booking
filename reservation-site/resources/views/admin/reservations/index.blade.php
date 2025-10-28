@@ -17,16 +17,19 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            User
+                                            Customer
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            User Email
+                                            Expert
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Start Time
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             End Time
+                                        </th>
+                                        <th scope="col" class="relative px-6 py-3">
+                                            <span class="sr-only">Actions</span>
                                         </th>
                                     </tr>
                                 </thead>
@@ -37,13 +40,20 @@
                                                 {{ $reservation->user->name }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                {{ $reservation->user->email }}
+                                                {{ $reservation->expert->name ?? 'N/A' }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 {{ $reservation->start_time }}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 {{ $reservation->end_time }}
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <form action="{{ route('admin.reservations.destroy', $reservation) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this reservation?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                                </form>
                                             </td>
                                         </tr>
                                     @endforeach

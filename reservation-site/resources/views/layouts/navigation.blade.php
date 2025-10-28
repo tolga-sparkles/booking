@@ -18,7 +18,7 @@
                     <x-nav-link :href="route('reservations.index')" :active="request()->routeIs('reservations.index')">
                         {{ __('My Reservations') }}
                     </x-nav-link>
-                    @if (Auth::user()->is_admin)
+                    @if (Auth::user()->isAdmin() || Auth::user()->isManager())
                         <x-nav-link :href="route('admin.reservations.index')" :active="request()->routeIs('admin.reservations.index')">
                             {{ __('Admin Panel') }}
                         </x-nav-link>

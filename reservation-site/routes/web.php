@@ -23,7 +23,7 @@ Route::middleware('auth')->group(function () {
 
 // Admin routes
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/reservations', [AdminReservationController::class, 'index'])->name('admin.reservations.index');
+    Route::resource('admin/reservations', AdminReservationController::class, ['as' => 'admin']);
 });
 
 require __DIR__.'/auth.php';

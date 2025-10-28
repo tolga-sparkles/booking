@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class EnsureUserIsAdmin
+class EnsureUserIsAdminOrManager
 {
     /**
      * Handle an incoming request.
@@ -17,7 +17,7 @@ class EnsureUserIsAdmin
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!Auth::check() || !Auth::user()->is_admin) {
+        if (!Auth::check() || (!Auth::user()->isAdmin() && !Auth::user()->isManager())) {
             // Redirect them to the home page or show an error
             return redirect('/');
         }

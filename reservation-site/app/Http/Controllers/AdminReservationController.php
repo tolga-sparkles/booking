@@ -14,8 +14,23 @@ class AdminReservationController extends Controller
      */
     public function index()
     {
-        $reservations = Reservation::with('user')->latest()->get();
+        $this->authorize('viewAny', Reservation::class);
+        $reservations = Reservation::with('user', 'expert')->latest()->get();
 
         return view('admin.reservations.index', compact('reservations'));
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\Reservation  $reservation
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function destroy(Reservation $reservation)
+    {
+        $this->authorize('delete', $reservation);
+        $reservation->delete();
+
+        return redirect()->route('admin.reservations.index')->with('success', 'Reservation deleted successfully.');
     }
 }
