@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminReservationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReservationController;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('reservations', ReservationController::class);
+});
+
+// Admin routes
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::resource('admin/reservations', AdminReservationController::class, ['as' => 'admin']);
 });
 
 require __DIR__.'/auth.php';
