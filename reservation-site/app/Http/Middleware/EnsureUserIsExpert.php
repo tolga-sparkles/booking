@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserIsExpert
@@ -16,7 +16,7 @@ class EnsureUserIsExpert
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check() || !Auth::user()->isExpert()) {
+        if (!Gate::allows('is_expert')) {
             abort(403, 'Unauthorized action.');
         }
 

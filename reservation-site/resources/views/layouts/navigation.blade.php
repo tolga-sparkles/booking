@@ -15,14 +15,11 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    @if(Auth::user()->isAdmin() || Auth::user()->isManager())
+                    @can('is_admin_or_manager')
                         <x-nav-link :href="route('admin.reservations.index')" :active="request()->routeIs('admin.reservations.index')">
-                            {{ __('Reservations') }}
+                            {{ __('Admin Panel') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.index')">
-                            {{ __('User Management') }}
-                        </x-nav-link>
-                    @endif
+                    @endcan
                     <x-nav-link :href="route('reservations.index')" :active="request()->routeIs('reservations.index')">
                         {{ __('My Reservations') }}
                     </x-nav-link>
@@ -81,11 +78,11 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            @if(Auth::user()->isAdmin() || Auth::user()->isManager())
+            @can('is_admin_or_manager')
                 <x-responsive-nav-link :href="route('admin.reservations.index')" :active="request()->routeIs('admin.reservations.index')">
                     {{ __('Admin Panel') }}
                 </x-responsive-nav-link>
-            @endif
+            @endcan
             <x-responsive-nav-link :href="route('reservations.index')" :active="request()->routeIs('reservations.index')">
                 {{ __('My Reservations') }}
             </x-responsive-nav-link>

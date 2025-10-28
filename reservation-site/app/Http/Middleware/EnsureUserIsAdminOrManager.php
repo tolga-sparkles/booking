@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserIsAdminOrManager
@@ -16,8 +16,7 @@ class EnsureUserIsAdminOrManager
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check() || !(Auth::user()->isAdmin() || Auth::user()->isManager())) {
-            // Redirect or abort if the user is not an admin or manager
+        if (!Gate::allows('is_admin_or_manager')) {
             abort(403, 'Unauthorized action.');
         }
 

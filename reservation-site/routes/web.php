@@ -26,9 +26,8 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin routes
-Route::middleware(['auth', 'admin'])->name('admin.')->prefix('admin')->group(function () {
-    Route::resource('reservations', AdminReservationController::class);
-    Route::resource('users', AdminUserController::class)->only(['index', 'edit', 'update']);
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::resource('admin/reservations', AdminReservationController::class, ['as' => 'admin']);
 });
 
 

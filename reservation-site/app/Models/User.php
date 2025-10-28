@@ -56,23 +56,11 @@ class User extends Authenticatable
         return $this->hasMany(Reservation::class, 'expert_id');
     }
 
-    public function isAdmin(): bool
+    /**
+     * Get the reservations for the user.
+     */
+    public function reservations(): HasMany
     {
-        return $this->role === 'admin';
-    }
-
-    public function isManager(): bool
-    {
-        return $this->role === 'manager';
-    }
-
-    public function isExpert(): bool
-    {
-        return $this->role === 'expert';
-    }
-
-    public function isCustomer(): bool
-    {
-        return $this->role === 'customer';
+        return $this->hasMany(Reservation::class, 'user_id');
     }
 }
