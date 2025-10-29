@@ -28,8 +28,8 @@
                     </div>
 
                     <div class="mt-6 flex justify-end">
-                        <a href="{{ url()->previous() }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-                            Back
+                        <a href="{{ route('admin.reservations.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            Back to List
                         </a>
                     </div>
                 </div>

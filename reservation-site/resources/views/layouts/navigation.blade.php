@@ -15,11 +15,11 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    @can('is_admin_or_manager')
+                    @if(in_array(Auth::user()->role, ['admin', 'manager']))
                         <x-nav-link :href="route('admin.reservations.index')" :active="request()->routeIs('admin.reservations.index')">
                             {{ __('Admin Panel') }}
                         </x-nav-link>
-                    @endcan
+                    @endif
                     <x-nav-link :href="route('reservations.index')" :active="request()->routeIs('reservations.index')">
                         {{ __('My Reservations') }}
                     </x-nav-link>
@@ -78,11 +78,11 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            @can('is_admin_or_manager')
+            @if(in_array(Auth::user()->role, ['admin', 'manager']))
                 <x-responsive-nav-link :href="route('admin.reservations.index')" :active="request()->routeIs('admin.reservations.index')">
                     {{ __('Admin Panel') }}
                 </x-responsive-nav-link>
-            @endcan
+            @endif
             <x-responsive-nav-link :href="route('reservations.index')" :active="request()->routeIs('reservations.index')">
                 {{ __('My Reservations') }}
             </x-responsive-nav-link>

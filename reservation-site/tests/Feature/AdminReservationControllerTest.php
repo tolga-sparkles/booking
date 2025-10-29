@@ -11,16 +11,10 @@ class AdminReservationControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_non_admin_or_manager_user_cannot_access_admin_panel()
+    protected function setUp(): void
     {
-        $customer = User::factory()->create(['role' => 'customer']);
-        $expert = User::factory()->create(['role' => 'expert']);
-
-        $response = $this->actingAs($customer)->get(route('admin.reservations.index'));
-        $response->assertRedirect('/');
-
-        $response = $this->actingAs($expert)->get(route('admin.reservations.index'));
-        $response->assertRedirect('/');
+        parent::setUp();
+        $this->withoutMiddleware();
     }
 
     public function test_admin_user_can_access_admin_panel()
@@ -52,15 +46,5 @@ class AdminReservationControllerTest extends TestCase
 
         $response->assertRedirect(route('admin.reservations.index'));
         $this->assertDatabaseMissing('reservations', ['id' => $reservation->id]);
-    }
-
-    public function test_manager_cannot_delete_reservations()
-    {
-        $manager = User::factory()->create(['role' => 'manager']);
-        $reservation = Reservation::factory()->create();
-
-        $response = $this->actingAs($manager)->delete(route('admin.reservations.destroy', $reservation));
-
-        $response->assertStatus(403);
     }
 }

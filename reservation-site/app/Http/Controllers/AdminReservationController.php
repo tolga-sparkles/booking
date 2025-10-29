@@ -25,6 +25,18 @@ class AdminReservationController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Reservation  $reservation
+     * @return \Illuminate\View\View
+     */
+    public function show(Reservation $reservation)
+    {
+        $this->authorize('view', $reservation);
+        return view('admin.reservations.show', compact('reservation'));
+    }
+
+    /**
      * Show the form for editing the specified resource.
      *
      * @param  \App\Models\Reservation  $reservation

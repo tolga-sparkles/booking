@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Support\Facades\Gate;
 
 class ReservationPolicy
 {
@@ -12,31 +13,30 @@ class ReservationPolicy
 
     public function viewAny(User $user)
     {
-        return $user->isAdmin() || $user->isManager();
+        return Gate::forUser($user)->allows('is_admin_or_manager');
     }
 
     public function view(User $user, Reservation $reservation)
     {
-        return $user->isAdmin()
-            || $user->isManager()
+        return Gate::forUser($user)->allows('is_admin_or_manager')
             || $user->id === $reservation->user_id
             || $user->id === $reservation->expert_id;
     }
 
     public function create(User $user)
     {
-        return $user->isCustomer();
+        return Gate::forUser($user)->allows('is_customer');
     }
 
     public function update(User $user, Reservation $reservation)
     {
-        return $user->isAdmin()
+        return Gate::forUser($user)->allows('is_admin_or_manager')
             || $user->id === $reservation->user_id
             || $user->id === $reservation->expert_id;
     }
 
     public function delete(User $user, Reservation $reservation)
     {
-        return $user->isAdmin() || $user->id === $reservation->user_id;
+        return Gate::forUser($user)->allows('is_admin_or_manager') || $user->id === $reservation->user_id;
     }
 }
